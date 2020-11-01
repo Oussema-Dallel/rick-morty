@@ -7,43 +7,12 @@ import axios from "axios";
 
 function App() {
   const [title] = useState("Rick & Morty");
-  const [data, setData] = useState([]);
-
-  useEffect(() => {
-    axios({
-      url: "https://rickandmortyapi.com/graphql",
-      method: "post",
-      data: {
-        query: `
-          query {
-            characters (page: 1){
-              results {
-                name
-                image
-                status
-                id
-                gender
-                species
-                episode{
-                  id
-                  name
-                  episode
-                }
-              }
-            }
-          }
-            `,
-      },
-    }).then((result) => {
-      setData(result.data.data.characters.results);
-    });
-  }, []);
 
   return (
     <div className="App">
       <Header title={title} />
-      <Container data={data} />
-      <Footer title={title} />
+      <Container />
+      {/*<Footer title={title} />*/}
     </div>
   );
 }
