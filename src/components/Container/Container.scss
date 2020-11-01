@@ -1,0 +1,106 @@
+@import "~bootstrap/scss/bootstrap";
+/*https://coolors.co/0d1b2a-1b263b-415a77-778da9-e0e1dd*/
+
+.Container {
+  display: flex;
+  flex-wrap: wrap;
+  margin: auto;
+}
+
+.entry {
+  flex-basis: 33.3333%;
+  margin: 2rem auto;
+  color: black;
+}
+
+.card {
+  color: #0D1B2A;
+  text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.2);
+  .card-body {
+    padding: 1rem;
+  }
+  .list-group-item {
+    text-shadow: none;
+    color:#e0e1dd;
+    background-color: #1b263b;
+  }
+  .fa-venus {
+    color: rgb(214, 84, 105);
+  }
+  .fa-genderless {
+    color: green;
+  }
+  .fa-mars {
+    color:$primary;
+  }
+  cursor: pointer;
+  margin-top: 4em;
+  padding: 0;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #778DA9;
+  box-shadow: #666 0px 0px 13px -3px;
+  .card-avatar {
+    position: relative;
+    a.details {
+      height: 100%;
+      position: absolute;
+      z-index: 1;
+      opacity: 0;
+      width: 100%;
+      display: block;
+      transition: opacity .6s ease;
+      background-color: #000;
+      span {
+        font-size: 55px;
+        line-height: 55px;
+        color: $dark;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-left: -25px;
+        margin-top: -27px;
+      }
+    }
+    
+    a.details:hover {
+      opacity: 1;
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+  
+  .card-title {
+      margin-bottom: 0rem;
+      &.status-dead:after{
+        content: "Dead";
+        background: $danger;
+      }
+      &.status-alive:after{
+        content: "Alive";
+        background: $success;
+      }
+      &.status-unkown:after{
+        content: "Unkown";
+        background: $dark;
+      }
+      &:after {
+        font-size: .5em;
+        font-weight: 100;
+        letter-spacing: 1px;
+        color: #fff;
+        background: #ff3131;
+        padding: .4em 1em;
+        position: absolute;
+        right: 0;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 5px;
+        top: 0;
+      }
+    }
+  h2, p {
+    padding: 0 5%;
+  }
+
+}

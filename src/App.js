@@ -1,4 +1,4 @@
-import "./App.css";
+import "./App.scss";
 import Header from "./components/Header/Header";
 import Container from "./components/Container/Container";
 import Footer from "./components/Footer/Footer";
@@ -6,14 +6,10 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 function App() {
-  const [title, setTitle] = useState("Rick & Morty");
+  const [title] = useState("Rick & Morty");
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    /*axios
-      .get("https://rickandmortyapi.com/api/character/")
-      .then((res) => setData(res.data.results))
-      .catch((err) => console.log(err));*/
     axios({
       url: "https://rickandmortyapi.com/graphql",
       method: "post",
