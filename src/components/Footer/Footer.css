@@ -1,0 +1,10 @@
+.copyleft {
+  display: inline-block;
+  transform: rotate(180deg);
+}
+
+.custom-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
