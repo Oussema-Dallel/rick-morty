@@ -1,11 +1,6 @@
 @import "~bootstrap/scss/bootstrap";
 /*https://coolors.co/0d1b2a-1b263b-415a77-778da9-e0e1dd*/
 
-.Container {
-  display: flex;
-  flex-wrap: wrap;
-  margin: auto;
-}
 
 .entry {
   flex-basis: 33.3333%;
@@ -13,7 +8,12 @@
   color: black;
 }
 
+.modal-90w {
+  width: 90%!important;
+  max-width: inherit!important;
+}
 .card {
+  margin: 0 auto;
   color: #0D1B2A;
   text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.2);
   .card-body {
@@ -42,7 +42,7 @@
   box-shadow: #666 0px 0px 13px -3px;
   .card-avatar {
     position: relative;
-    a.details {
+    button.details {
       height: 100%;
       position: absolute;
       z-index: 1;
@@ -63,7 +63,7 @@
       }
     }
     
-    a.details:hover {
+    button.details:hover {
       opacity: 1;
       &:hover {
         opacity: 0.8;
