@@ -1,10 +1,11 @@
 import { Navbar } from "react-bootstrap";
 import logo from "../../assets/images/logo192.png";
+import SearchBox from "../SearchBox/SearchBox";
 function Header({ title, ...props }) {
   return (
     <div className="Header">
       <Navbar bg="dark" variant="dark">
-        <Navbar.Brand href="#home">
+        <Navbar.Brand href="#home" className="mr-auto">
           <img
             alt=""
             src={logo}
@@ -14,6 +15,7 @@ function Header({ title, ...props }) {
           />{" "}
           {title}
         </Navbar.Brand>
+        <SearchBox setValue={(e) => props.setFilter(e)} />
       </Navbar>
     </div>
   );

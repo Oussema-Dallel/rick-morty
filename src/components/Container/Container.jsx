@@ -1,8 +1,15 @@
 import "./Container.scss";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faInfoCircle, faMars, faVenus, faGenderless, faCircleNotch } from '@fortawesome/free-solid-svg-icons'
-import InfiniteScroll from 'react-infinite-scroller';
-import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faInfoCircle,
+  faMars,
+  faVenus,
+  faGenderless,
+  faCircleNotch,
+} from "@fortawesome/free-solid-svg-icons";
+import InfiniteScroll from "react-infinite-scroller";
+import { useCallback, useEffect, useState } from "react";
+import useDebounce from "../SearchBox/debounce";
 
 import axios from "axios";
 
@@ -14,13 +21,13 @@ import {
   Row,
   Container,
   Modal,
-  Button
+  Button,
 } from "react-bootstrap";
 
-function Body() {
+function Body({ filter }) {
   const [data, setData] = useState([]);
+  const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [currentCaracter, setCurrentCaracter] = useState({});
 
@@ -28,7 +35,7 @@ function Body() {
 
   const handleClose = () => setShow(false);
   const handleShow = (e, id) => {
-    setLoading(true)
+    setLoading(true);
     axios({
       url: "https://rickandmortyapi.com/graphql",
       method: "post",
@@ -61,10 +68,10 @@ function Body() {
       },
     }).then((result) => {
       setCurrentCaracter(result.data.data.character);
-      setShow(true)
+      setShow(true);
     });
   };
-  
+
   const getStatusClassName = (status) => {
     let statusClassName;
     switch (status) {
@@ -93,16 +100,17 @@ function Body() {
         genderIcon = faGenderless;
         break;
     }
-    return genderIcon
-  }
-  const loadFunc = () => {
+    return genderIcon;
+  };
+
+  const loadFunc = (IFpage, rendered) => {
     axios({
       url: "https://rickandmortyapi.com/graphql",
       method: "post",
       data: {
         query: `
           query {
-            characters (page: ${page}){
+            characters (page: ${IFpage}, filter: { name: "${filter}" }){
               results {
                 name
                 image
@@ -120,37 +128,101 @@ function Body() {
           }
             `,
       },
-    }).then((result) => {
-      if(result.data.data.characters.results.length === 0) {
-        setHasMore(false)
-      }
-      setData([...data, ...result.data.data.characters.results]);
-      setPage(page + 1);
-    });
-  }
+    })
+      .then((result) => {
+        if (rendered) {
+          if (result.data.data.characters !== null) {
+            if (result.data.data.characters.results.length === 0) {
+              setData([...result.data.data.characters.results]);
+            } else {
+              setData([]);
+            }
+            setPage(1);
+          }
+        } else {
+          if (result.data.data.characters.results.length > 0) {
+            setData((d) => [...d, ...result.data.data.characters.results]);
+            setPage(page + 1);
+          } else {
+            setHasMore(false);
+          }
+        }
+      })
+      .catch((err) => console.log(err));
+  };
 
-  
+  useEffect(() => {
+    console.log("debounce");
+    axios({
+      url: "https://rickandmortyapi.com/graphql",
+      method: "post",
+      data: {
+        query: `
+          query {
+            characters (page: 1, filter: { name: "${filter}" }){
+              results {
+                name
+                image
+                status
+                id
+                gender
+                species
+                episode{
+                  id
+                  name
+                  episode
+                }
+              }
+            }
+          }
+            `,
+      },
+    })
+      .then((result) => {
+        if (result.data.data.characters !== null) {
+          if (result.data.data.characters.results.length > 0) {
+            setData([...result.data.data.characters.results]);
+            setHasMore(true);
+          } else {
+            setData([]);
+          }
+          setPage(1);
+        }
+      })
+      .catch((err) => console.log(err));
+  }, [filter]);
+
   return (
     <div className="mt-5">
       <Container fluid>
-      <InfiniteScroll
-          pageStart={0}
+        <InfiniteScroll
+          pageStart={2}
           loadMore={loadFunc}
           hasMore={hasMore}
-          loader={<div className="loader" key={0}>Loading ...</div>}
-      >
-       <Row xs={1} md={2} lg={3} xl={4}>
+          loader={
+            <div className="loader" key={0}>
+              Loading ...
+            </div>
+          }
+        >
+          <Row xs={1} md={2} lg={3} xl={4}>
             {data.map((d, i) => (
-              <Col key={d.id}>
+              <Col key={i}>
                 <Card style={{ width: "18rem" }}>
                   <div className="card-avatar">
-                    <Button onClick={(e) => handleShow(e, d.id)} className="details">
-                      { 
-                        loading ? 
-                        <span><FontAwesomeIcon icon={faCircleNotch} spin /></span>
-                        :
-                        <span><FontAwesomeIcon icon={faInfoCircle} /></span>
-                      }
+                    <Button
+                      onClick={(e) => handleShow(e, d.id)}
+                      className="details"
+                    >
+                      {loading ? (
+                        <span>
+                          <FontAwesomeIcon icon={faCircleNotch} spin />
+                        </span>
+                      ) : (
+                        <span>
+                          <FontAwesomeIcon icon={faInfoCircle} />
+                        </span>
+                      )}
                     </Button>
                     <Card.Img variant="top" src={d.image} />
                   </div>
@@ -176,75 +248,81 @@ function Body() {
                 </Card>
               </Col>
             ))}
-           </Row>
+          </Row>
         </InfiniteScroll>
-        </Container>
-        <Modal show={show} onHide={handleClose} onEntered={() => setLoading(false)} dialogClassName="modal-90w">
-          <Modal.Header closeButton>
-            <Modal.Title>{currentCaracter.name}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-               <Container fluid>
-                    <Row>
-                    { currentCaracter.origin ? 
-                      <Col>
-                        <Card
-                          bg="light"
-                        >
-                          <Card.Body>
-                            <Card.Title>Origin</Card.Title>
-                            <Card.Text>
-                                {currentCaracter.origin.name ? currentCaracter.origin.name + " " : ""}
-                                {currentCaracter.origin.type ? "(Type: " + currentCaracter.origin.type  + ") " : ""}
-                            </Card.Text>
-                          </Card.Body>
-                        </Card>
-                      </Col>
-                        : null}
-                      { currentCaracter.location ? 
-                      <Col>
-                        <Card
-                          bg="light"
-                        >
-                          <Card.Body>
-                            <Card.Title>Current Location</Card.Title>
-                            <Card.Text>
-                              {currentCaracter.location.name ? currentCaracter.location.name + " " : ""}
-                              {currentCaracter.location.type ? "(Type: " + currentCaracter.location.type  + ") " : ""}
-                            </Card.Text>
-                          </Card.Body>
-                        </Card>
-                      </Col>
-                        : null}
-                    </Row>
-                    <Row>
-                    { currentCaracter.episode ? 
-                      currentCaracter.episode.map((episode) => (
-                        <Col key={episode.id}>
-                        <Card
-                          bg="light"
-                        >
-                          <Card.Body>
-                            <Card.Text>
-                              {episode.episode ? episode.episode + " " : ""}
-                              {episode.name ? "( " + episode.name + ") " : ""}
-                              {episode.air_date ? episode.air_date : ""}
-                            </Card.Text>
-                          </Card.Body>
-                        </Card>
-                      </Col>
-                      )) : null}
-                      
-                    </Row>
-              </Container>       
-
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleClose}>
-              Close
-            </Button>
-          </Modal.Footer>
-        </Modal>
+      </Container>
+      <Modal
+        show={show}
+        onHide={handleClose}
+        onEntered={() => setLoading(false)}
+        dialogClassName="modal-90w"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>{currentCaracter.name}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Container fluid>
+            <Row>
+              {currentCaracter.origin ? (
+                <Col>
+                  <Card bg="light">
+                    <Card.Body>
+                      <Card.Title>Origin</Card.Title>
+                      <Card.Text>
+                        {currentCaracter.origin.name
+                          ? currentCaracter.origin.name + " "
+                          : ""}
+                        {currentCaracter.origin.type
+                          ? "(Type: " + currentCaracter.origin.type + ") "
+                          : ""}
+                      </Card.Text>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ) : null}
+              {currentCaracter.location ? (
+                <Col>
+                  <Card bg="light">
+                    <Card.Body>
+                      <Card.Title>Current Location</Card.Title>
+                      <Card.Text>
+                        {currentCaracter.location.name
+                          ? currentCaracter.location.name + " "
+                          : ""}
+                        {currentCaracter.location.type
+                          ? "(Type: " + currentCaracter.location.type + ") "
+                          : ""}
+                      </Card.Text>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ) : null}
+            </Row>
+            <Row>
+              {currentCaracter.episode
+                ? currentCaracter.episode.map((episode) => (
+                    <Col key={episode.id}>
+                      <Card bg="light">
+                        <Card.Body>
+                          <Card.Text>
+                            {episode.episode ? episode.episode + " " : ""}
+                            {episode.name ? "( " + episode.name + ") " : ""}
+                            {episode.air_date ? episode.air_date : ""}
+                          </Card.Text>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))
+                : null}
+            </Row>
+          </Container>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }
